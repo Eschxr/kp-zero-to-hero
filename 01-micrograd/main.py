@@ -173,10 +173,12 @@ if __name__ == "__main__":
         loss = sum((yout - ygt)**2 for ygt, yout in zip(ys, ypred))
         print("Loss: ")
         print(loss)
+        for p in n.parameters():    # zero grad, cuz if we keep adding and never reset grad goes cray cray
+            p.grad = 0.0
         loss.backward()
 
         for p in n.parameters():
-            p.data += -0.01 * p.grad
+            p.data += -0.05 * p.grad
         print("------------------")
 
     ypred = [n(x) for x in xs]
