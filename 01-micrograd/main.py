@@ -78,6 +78,15 @@ class Value:
 
         return out
 
+    def relu(self):
+        out = Value(0 if self.data < 0 else self.data, (self,), 'ReLU')
+
+        def _backward():
+            self.grad += (out.data > 0) * out.grad
+        out._backward = _backward
+
+        return out
+
     def exp(self):
         x = self.data
         out = Value(math.exp(x), (self, ), 'exp')
@@ -120,6 +129,9 @@ class Neuron:
     def parameters(self):
         return self.w + [self.b]
 
+    def __repr__(self):
+        return f"Neuron({len(self.w)})"
+
 
 class Layer:
 
@@ -132,6 +144,9 @@ class Layer:
 
     def parameters(self):
         return [p for neuron in self.neurons for p in neuron.parameters()] 
+
+    def __repr__(self):
+        return f"Layer of [{', '.join(str(n) for n in self.neurons)}]"
 
 
 class MLP:
@@ -147,6 +162,9 @@ class MLP:
 
     def parameters(self):
         return [p for layer in self.layers for p in layer.parameters()]
+
+    def __repr__(self):
+        return f"MLP of [{', '.join(str(layer) for layer in self.layers)}]"
 
 
 if __name__ == "__main__":
