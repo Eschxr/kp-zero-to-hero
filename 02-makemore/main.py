@@ -1,16 +1,12 @@
-if __name__ == "__main__":
-    words = open('names.txt', 'r').read().splitlines()
-    # print(words[:10])
-    bigram_dict = {}                            # dictionary storing bigram frequencies
+import torch
 
-    # Get bigram freqs of entire dataset, stored in a python dict
-    for word in words:
-        chars = ['<S>'] + list(word) + ['<E>']  # add special start & end chars
-        for ch1, ch2 in zip(chars, chars[1:]):
-            bigram = (ch1, ch2)
-            bigram_dict[bigram] = bigram_dict.get(bigram, 0) + 1
-            # print(ch1, ch2)
+if __name__ == "__main__":
+    N = torch.zeros((28, 28), dtype=torch.int32)
+    words = open('names.txt', 'r').read().splitlines()
     
-    bigram_dict = sorted(bigram_dict.items(), key = lambda kv: kv[1], reverse = True)
-    print(bigram_dict)
+    for word in words:
+        chs = ['<S>'] + list(word) + ['<E>']
+        for ch1, ch2 in zip(chs, chs[1:]):
+            pass
+            # use a string to int lookup (ord func) to index tensor and count freqs
 
