@@ -33,14 +33,16 @@ if __name__ == "__main__":
     plt.show()
     """
 
+    P = N.float()
+    P = P / P.sum(1, keepdim=True)
+
     g = torch.Generator().manual_seed(42)
     
     for i in range(20):
         out = ""
         ix = 0
         while True:
-            p = N[ix].float()
-            p = p / p.sum()
+            p = P[ix]
             # p = torch.ones(27) / 27.0     # 'untrained' model (uniform distribution)
             ix = torch.multinomial(p, num_samples=1, replacement=True, generator=g).item()
             if ix == 0:
