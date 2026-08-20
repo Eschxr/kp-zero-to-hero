@@ -1,9 +1,11 @@
 """
-WIP neural net version of the bigram language model
+This script constructs all possible bigrams from `names.txt` and stores counts
+in a Tensor, which is then normalized and sampled from, forming a simple baseline
+character-level bigram model, which is then assessed (only on one word for now)
+using the negative log likelihood loss function
 """
 
 import torch
-import torch.nn.functional as F
 import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
