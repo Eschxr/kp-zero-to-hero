@@ -63,11 +63,11 @@ if __name__ == "__main__":
     C = torch.randn((27, 2), generator=g)   # Bengio et al. 2003 compressed 17000 words -> 30-d space, we shall do 27 chars -> 2-d space
 
     # Layer 1
-    W1 = torch.randn((6, 100), generator=g)
-    b1 = torch.randn(100, generator=g)
+    W1 = torch.randn((6, 300), generator=g)
+    b1 = torch.randn(300, generator=g)
 
     # Layer 2
-    W2 = torch.randn((100, 27), generator=g)
+    W2 = torch.randn((300, 27), generator=g)
     b2 = torch.randn(27, generator=g)
     parameters = [C, W1, b1, W2, b2]
     print(f'Total params: {sum(p.nelement() for p in parameters)}')
@@ -78,9 +78,10 @@ if __name__ == "__main__":
     # lre = torch.linspace(-3, 0, 1000)   # Linearly generate exponent candidates
     # lrs = 10**lre   # Exponentially distributed (10^-3 -> 10^0) learning rates
     # lri, lossi = [], []
+    # lossi, stepi = [], []
 
     # Training
-    for i in range(10000):
+    for i in range(30000):
         # Construct minibatch
         ix = torch.randint(0, Xtr.shape[0], (32,))
 
@@ -101,6 +102,7 @@ if __name__ == "__main__":
 
         # Learning rate stat tracker
         # lri.append(lre[i])
+        # stepi.append(i)
         # lossi.append(loss.item())
 
 
@@ -116,7 +118,15 @@ if __name__ == "__main__":
     loss = F.cross_entropy(logits, Yte)   # Previous manual calculation replaced since this is more optimized & well-behaved
     print(f'Final Loss (Entire Test Set): {loss.item()}')
 
-    # Plot learning rates & losses
+    # Plot loss w.r.t. steps, learning rate, etc.
     # plt.figure(figsize=(16, 16))
     # plt.plot(lri, lossi)
     # plt.show()
+
+    # Plot embeddings
+    plt.figure(figsize=(8, 8))
+    plt.scatter(C[:,0].data, C[:,1].data, s=200)
+    for i in range(C.shape[0]):
+        plt.text(C[i,0].item(), C[i,1].item(), itos[i], ha="center", va="center", color="white")
+    plt.grid('minor')
+    plt.show()

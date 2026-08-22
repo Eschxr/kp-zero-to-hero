@@ -36,4 +36,6 @@ Let us take what we've built, and push it even further.
 
 ### Improvements
 * We know the ~3000 parameter neural net is underfitting, so let's increase the size of the hidden layer from 100 -> 300 parameters and see what happens!
+* We now have ~10000 parameters and from a single "get your feet wet" test loss seems to be worse than before
+* Increasing number of params in the hidden layer seems to not have changed much, so Karpathy suggests increasing the dimensions of the embedding layer, which is actually really cool when visualized in 2d (as it is right now) and we can see the model put similar characters (i.e: vowels) closer together and outliers (i.e: boundary marker, 'q', etc.) further away
 
