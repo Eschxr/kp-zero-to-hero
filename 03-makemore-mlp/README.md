@@ -38,4 +38,10 @@ Let us take what we've built, and push it even further.
 * We know the ~3000 parameter neural net is underfitting, so let's increase the size of the hidden layer from 100 -> 300 parameters and see what happens!
 * We now have ~10000 parameters and from a single "get your feet wet" test loss seems to be worse than before
 * Increasing number of params in the hidden layer seems to not have changed much, so Karpathy suggests increasing the dimensions of the embedding layer, which is actually really cool when visualized in 2d (as it is right now) and we can see the model put similar characters (i.e: vowels) closer together and outliers (i.e: boundary marker, 'q', etc.) further away
+* So we're really gonna multiply the number of embeddings by 5, that's fine by me; going from 2d->10d embeddings should produce pretty significant performance gains I'm expecting (or massive overfitting but hey that's also technically significant performance gain)
+* By increasing embedding size and introducing rudimentary learning rate decay I reached ~2.19 loss on the test set with 100k training iterations. Karpathy set a challenge to beat his ~2.17 loss so that'll be the next section
+
+### Challenge: Beat 2.17
+* I'm gonna try doubling the batch size, and improving the learning rate decay (at around 10k-20k we get this thick loss fluctuation so that's probably where I'll start scaling learning rate exponentially w.r.t. iter count. I've currently got learning rate at 0.1 when iters <= 10000, and it scales exponentially w.r.t. (i/iters + 1) which should give a smooth curve down to a learning rate of 0.01. Batch sizes also doubled from 32 to 64, results will be added when I test this setup
+* So loss is roughly 2.20, which means nothing really changed. I guess next up is changing the model architecture itself, and playing around with the embedding/hiddne layer, potentially also giving the model longer context
 
