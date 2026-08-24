@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import random
+from tqdm import tqdm
 
 
 # String : Int and Int : String maps
@@ -81,7 +82,7 @@ if __name__ == "__main__":
     iters = 1000000
 
     # Training
-    for i in range(iters):
+    for i in tqdm(range(iters), ascii=True, desc="Training Progress"):
         # Construct minibatch
         ix = torch.randint(0, Xtr.shape[0], (32,))
 
@@ -103,9 +104,9 @@ if __name__ == "__main__":
         for p in parameters:
             p.data += -lr * p.grad
 
-        if (i+1) % 1000 == 0:
-            print(f"Iteration {i+1} of {iters}")
-            print(f"Learning rate: {lr}")
+        # if (i+1) % 1000 == 0:
+        #    print(f"Iteration {i+1} of {iters}")
+        #    print(f"Learning rate: {lr}")
 
         # Learning rate stat tracker
         # lri.append(lre[i])
