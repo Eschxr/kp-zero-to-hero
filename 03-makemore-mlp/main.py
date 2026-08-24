@@ -78,14 +78,12 @@ if __name__ == "__main__":
     # lrs = 10**lre   # Exponentially distributed (10^-3 -> 10^0) learning rates
     # lri, lossi = [], []
     lossi, stepi = [], []
-    iters = 100000
+    iters = 1000000
 
     # Training
     for i in range(iters):
-        if (i+1) % 1000 == 0:
-            print(f"Iteration {i+1} of {iters}")
         # Construct minibatch
-        ix = torch.randint(0, Xtr.shape[0], (64,))
+        ix = torch.randint(0, Xtr.shape[0], (32,))
 
         # Forward pass
         emb = C[Xtr[ix]]
@@ -104,6 +102,10 @@ if __name__ == "__main__":
             lr = 0.1 ** (i / iters + 1)
         for p in parameters:
             p.data += -lr * p.grad
+
+        if (i+1) % 1000 == 0:
+            print(f"Iteration {i+1} of {iters}")
+            print(f"Learning rate: {lr}")
 
         # Learning rate stat tracker
         # lri.append(lre[i])

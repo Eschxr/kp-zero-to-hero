@@ -44,4 +44,9 @@ Let us take what we've built, and push it even further.
 ### Challenge: Beat 2.17
 * I'm gonna try doubling the batch size, and improving the learning rate decay (at around 10k-20k we get this thick loss fluctuation so that's probably where I'll start scaling learning rate exponentially w.r.t. iter count. I've currently got learning rate at 0.1 when iters <= 10000, and it scales exponentially w.r.t. (i/iters + 1) which should give a smooth curve down to a learning rate of 0.01. Batch sizes also doubled from 32 to 64, results will be added when I test this setup
 * So loss is roughly 2.20, which means nothing really changed. I guess next up is changing the model architecture itself, and playing around with the embedding/hiddne layer, potentially also giving the model longer context
+* So I got a loss of 2.12 by keeping pretty much the exact same hyperparameters (10-d embedding layer, size 200 hidden layer, context length of 3 chars, same learning rate decay as above) and running 1 million training iterations. I guess that's mission accomplished?
+* For now I'll move on to the next section, but I'm definitely taking future knowledge and coming back to beat this "brute forced" loss accomplishment.
+
+### Challenge 2.0, Electric Boogaloo: Beat 2.12 in under 500k iterations
+* Procrastinating
 
