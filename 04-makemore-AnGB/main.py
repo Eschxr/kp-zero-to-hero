@@ -19,6 +19,7 @@ for i in range(ord('a'), ord('z')+1):
 
 itos = {i:s for s, i in stoi.items()}
 BLOCK_SIZE = 3  # character-level context length
+VOCAB_SIZE = 27 # |V|
 
 def build_dataset(words):
     # Construct dataset
@@ -41,6 +42,12 @@ def build_dataset(words):
 if __name__ == "__main__":
     words = open('names.txt', 'r').read().splitlines()
 
+    # Hyperparameters
+    n_embd = 10     # Dimensionality of character embeddings
+    n_hidden = 200  # Number of neurons in the hidden layer
+    n_batchsize = 32# Size of each minibatch for SGD
+    iters = 200000 # Number of training iterations
+
     # Random train/val/test dataset splits
     random.seed(42)
     random.shuffle(words)
@@ -60,15 +67,15 @@ if __name__ == "__main__":
     g = torch.Generator().manual_seed(42)
 
     # Neural net
-    C = torch.randn((27, 10), generator=g)   # Bengio et al. 2003 compressed 17000 words -> 30-d space, we shall do 27 chars -> 2-d space
+    C = torch.randn((VOCAB_SIZE, n_embd), generator=g)   # Bengio et al. 2003 compressed 17000 words -> 30-d space, we shall do 27 chars -> 2-d space
 
     # Layer 1
-    W1 = torch.randn((30, 200), generator=g)
-    b1 = torch.randn(200, generator=g)
+    W1 = torch.randn((n_embd*BLOCK_SIZE, n_hidden), generator=g)
+    b1 = torch.randn(n_hidden, generator=g)
 
     # Layer 2
-    W2 = torch.randn((200, 27), generator=g)
-    b2 = torch.randn(27, generator=g)
+    W2 = torch.randn((n_hidden, VOCAB_SIZE), generator=g) * 0.01
+    b2 = torch.randn(VOCAB_SIZE, generator=g) * 0
     parameters = [C, W1, b1, W2, b2]
     print(f'Total params: {sum(p.nelement() for p in parameters)}')
     for p in parameters:
@@ -79,16 +86,15 @@ if __name__ == "__main__":
     # lrs = 10**lre   # Exponentially distributed (10^-3 -> 10^0) learning rates
     # lri, lossi = [], []
     lossi, stepi = [], []
-    iters = 1000000
 
     # Training
     for i in tqdm(range(iters), ascii=True, desc="Training Progress"):
         # Construct minibatch
-        ix = torch.randint(0, Xtr.shape[0], (32,))
+        ix = torch.randint(0, Xtr.shape[0], (n_batchsize,))
 
         # Forward pass
         emb = C[Xtr[ix]]
-        h = torch.tanh(emb.view(-1, 30) @ W1 + b1)
+        h = torch.tanh(emb.view(emb.shape[0], -1) @ W1 + b1)
         logits = h @ W2 + b2
         loss = F.cross_entropy(logits, Ytr[ix])   # Previous manual calculation replaced since this is more optimized & well-behaved
         # print(f'Loss: {loss.item()}, Interval: {i}')
@@ -115,13 +121,13 @@ if __name__ == "__main__":
 
 
     emb = C[Xtr]
-    h = torch.tanh(emb.view(-1, 30) @ W1 + b1)
+    h = torch.tanh(emb.view(emb.shape[0], -1) @ W1 + b1)
     logits = h @ W2 + b2
     loss = F.cross_entropy(logits, Ytr)   # Previous manual calculation replaced since this is more optimized & well-behaved
     print(f'Final Loss (Entire Training Set): {loss.item()}')
 
     emb = C[Xte]
-    h = torch.tanh(emb.view(-1, 30) @ W1 + b1)
+    h = torch.tanh(emb.view(emb.shape[0], -1) @ W1 + b1)
     logits = h @ W2 + b2
     loss = F.cross_entropy(logits, Yte)   # Previous manual calculation replaced since this is more optimized & well-behaved
     print(f'Final Loss (Entire Test Set): {loss.item()}')
