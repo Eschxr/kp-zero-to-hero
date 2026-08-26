@@ -70,13 +70,21 @@ if __name__ == "__main__":
     C = torch.randn((VOCAB_SIZE, n_embd), generator=g)   # Bengio et al. 2003 compressed 17000 words -> 30-d space, we shall do 27 chars -> 2-d space
 
     # Layer 1
-    W1 = torch.randn((n_embd*BLOCK_SIZE, n_hidden), generator=g)
-    b1 = torch.randn(n_hidden, generator=g)
+    W1 = torch.randn((n_embd*BLOCK_SIZE, n_hidden), generator=g) * (5/3)/((n_embd*BLOCK_SIZE)**0.5)
+    # b1 = torch.randn(n_hidden, generator=g) * 0.01
 
     # Layer 2
     W2 = torch.randn((n_hidden, VOCAB_SIZE), generator=g) * 0.01
     b2 = torch.randn(VOCAB_SIZE, generator=g) * 0
-    parameters = [C, W1, b1, W2, b2]
+
+    # Batch normalization parameters
+    bngain = torch.ones((1, n_hidden))
+    bnbias = torch.zeros((1, n_hidden))
+    bnmean_running = torch.zeros((1, n_hidden))
+    bnstd_running = torch.ones((1, n_hidden))
+
+    # Grouping parameters
+    parameters = [C, W1, W2, b2, bngain, bnbias]
     print(f'Total params: {sum(p.nelement() for p in parameters)}')
     for p in parameters:
         p.requires_grad = True
@@ -94,7 +102,18 @@ if __name__ == "__main__":
 
         # Forward pass
         emb = C[Xtr[ix]]
-        h = torch.tanh(emb.view(emb.shape[0], -1) @ W1 + b1)
+        embcat = emb.view(emb.shape[0], -1)
+        hpreact = embcat @ W1
+        bnmeani = hpreact.mean(0, keepdim=True)
+        bnstdi = hpreact.std(0, keepdim=True)
+        hpreact = bngain * (hpreact - bnmeani) / bnstdi + bnbias
+
+        # Batchnorm mean & stdev optimization
+        with torch.no_grad():
+            bnmean_running = 0.999 * bnmean_running + 0.001 * bnmeani
+            bnstd_running = 0.999 * bnstd_running + 0.001 * bnstdi
+
+        h = torch.tanh(hpreact)
         logits = h @ W2 + b2
         loss = F.cross_entropy(logits, Ytr[ix])   # Previous manual calculation replaced since this is more optimized & well-behaved
         # print(f'Loss: {loss.item()}, Interval: {i}')
@@ -119,15 +138,28 @@ if __name__ == "__main__":
         stepi.append(i)
         lossi.append(loss.log10().item())
 
+    # Calibrate batchnorm post-train
+    with torch.no_grad():
+        emb = C[Xtr]
+        embcat = emb.view(emb.shape[0], -1)
+        hpreact = embcat @ W1
+        bnmean = hpreact.mean(0, keepdim=True)
+        bnstd = hpreact.std(0, keepdim=True)
 
     emb = C[Xtr]
-    h = torch.tanh(emb.view(emb.shape[0], -1) @ W1 + b1)
+    embcat = emb.view(emb.shape[0], -1)
+    hpreact = embcat @ W1
+    hpreact = bngain * (hpreact - bnmean_running) / bnstd_running + bnbias
+    h = torch.tanh(hpreact)
     logits = h @ W2 + b2
     loss = F.cross_entropy(logits, Ytr)   # Previous manual calculation replaced since this is more optimized & well-behaved
     print(f'Final Loss (Entire Training Set): {loss.item()}')
 
     emb = C[Xte]
-    h = torch.tanh(emb.view(emb.shape[0], -1) @ W1 + b1)
+    embcat = emb.view(emb.shape[0], -1)
+    hpreact = embcat @ W1
+    hpreact = bngain * (hpreact - bnmean_running) / bnstd_running + bnbias
+    h = torch.tanh(hpreact)
     logits = h @ W2 + b2
     loss = F.cross_entropy(logits, Yte)   # Previous manual calculation replaced since this is more optimized & well-behaved
     print(f'Final Loss (Entire Test Set): {loss.item()}')
@@ -139,7 +171,10 @@ if __name__ == "__main__":
         context = [0 for _ in range(BLOCK_SIZE)]
         while True:
             emb = C[torch.tensor([context])]
-            h = torch.tanh(emb.view(1, -1) @ W1 + b1)
+            embcat = emb.view(1, -1)
+            hpreact = embcat @ W1
+            hpreact = bngain * (hpreact - bnmean_running) / bnstd_running + bnbias
+            h = torch.tanh(hpreact)
             logits = h @ W2 + b2
             probs = F.softmax(logits, dim=1)
             ix = torch.multinomial(probs, num_samples=1, generator=g).item()
