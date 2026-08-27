@@ -178,63 +178,19 @@ if __name__ == "__main__":
         stepi.append(i)
         lossi.append(loss.log10().item())
 
-
-    # Calibrate batchnorm post-train
-    with torch.no_grad():
-        emb = C[Xtr]
-        embcat = emb.view(emb.shape[0], -1)
-        hpreact = embcat @ W1
-        bnmean = hpreact.mean(0, keepdim=True)
-        bnstd = hpreact.std(0, keepdim=True)
-
-    emb = C[Xtr]
-    embcat = emb.view(emb.shape[0], -1)
-    hpreact = embcat @ W1
-    hpreact = bngain * (hpreact - bnmean_running) / bnstd_running + bnbias
-    h = torch.tanh(hpreact)
-    logits = h @ W2 + b2
-    loss = F.cross_entropy(logits, Ytr)   # Previous manual calculation replaced since this is more optimized & well-behaved
-    print(f'Final Loss (Entire Training Set): {loss.item()}')
-
-    emb = C[Xte]
-    embcat = emb.view(emb.shape[0], -1)
-    hpreact = embcat @ W1
-    hpreact = bngain * (hpreact - bnmean_running) / bnstd_running + bnbias
-    h = torch.tanh(hpreact)
-    logits = h @ W2 + b2
-    loss = F.cross_entropy(logits, Yte)   # Previous manual calculation replaced since this is more optimized & well-behaved
-    print(f'Final Loss (Entire Test Set): {loss.item()}')
+        break   # Temporary single optimization step
 
 
-    # Sampling
-    for _ in range(20):
-        out = []
-        context = [0 for _ in range(BLOCK_SIZE)]
-        while True:
-            emb = C[torch.tensor([context])]
-            embcat = emb.view(1, -1)
-            hpreact = embcat @ W1
-            hpreact = bngain * (hpreact - bnmean_running) / bnstd_running + bnbias
-            h = torch.tanh(hpreact)
-            logits = h @ W2 + b2
-            probs = F.softmax(logits, dim=1)
-            ix = torch.multinomial(probs, num_samples=1, generator=g).item()
-            context = context[1:] + [ix]
-            if ix == 0:
-                break
-            out.append(ix)
-        print(''.join(itos[i] for i in out))
-
-    
-    # Plot loss w.r.t. steps, learning rate, etc.
-    plt.figure(figsize=(8, 8))
-    plt.plot(stepi, lossi)
+    # Visualizations
+    plt.figure(figsize=(20, 4))
+    legends = []
+    for i, layer in enumerate(layers[:-1]):
+        if isinstance(layer, Tanh):
+            t = layer.out
+            print(f'layer {i} ({layer.__class__.__name__}): mean {t.mean()}, std {t.std()}, saturated {(t.abs() > 0.97).float().mean()*100}')
+            hy, hx = torch.histogram(t, density=True)
+            plt.plot(hx[:-1].detach(), hy.detach())
+            legends.append(f'layer {i} ({layer.__class__.__name__})')
+    plt.legend(legends)
+    plt.title('activation distribution')
     plt.show()
-
-    # Plot embeddings
-    # plt.figure(figsize=(8, 8))
-    # plt.scatter(C[:,0].data, C[:,1].data, s=200)
-    # for i in range(C.shape[0]):
-    #     plt.text(C[i,0].item(), C[i,1].item(), itos[i], ha="center", va="center", color="white")
-    # plt.grid('minor')
-    # plt.show()
