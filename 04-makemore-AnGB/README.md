@@ -99,4 +99,5 @@
 * One way to fix this is to calculate the mean and stdev of the training set after training completes, and use them as constant tensors
 * Perhaps a better way to do this without having to manually calculate the mean & stdev post-training is to keep a running mean & stdev and adjust them while training (but not with pytorch/gradients)
 * Another thing to note: batch normalization (subtracting the mean) removes any effect of the biases of the linear layer, so we can micro-optimize by removing the biases (which won't have any effect, since the responsibility has already been shifted to the batchnorm biases)
+* ANOTHER thing to note (oh my days): the way Karpathy does stochastic gradient descent here is unusual -- (human em-dash) randomly sampling batches from the dataset in each training iteration. The standard way afaik is to shuffle & split the dataset into batches at the start of each epoch so as to guarantee that after every epoch the entire dataset passes through our neural net (making the training process more tractable than random sampling at each iter)
 
