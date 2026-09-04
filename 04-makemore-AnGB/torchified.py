@@ -142,6 +142,7 @@ if __name__ == "__main__":
 
     # Training
     lossi, stepi = [], []
+    ud = []
     for i in tqdm(range(iters), ascii=True, desc="Training Progress"):
         # Construct minibatch
         ix = torch.randint(0, Xtr.shape[0], (n_batchsize,))
@@ -177,8 +178,11 @@ if __name__ == "__main__":
         # lri.append(lre[i])
         stepi.append(i)
         lossi.append(loss.log10().item())
+        with torch.no_grad():
+            # learning rate adjusted gradient stdev : data stdev
+            ud.append([(lr*p.grad.std() / p.data.std()).log10().item() for p in parameters])
 
-        break   # Temporary single optimization step
+        if i >= 1000: break   # Temporary single optimization step
 
 
     # Visualizations
@@ -205,5 +209,27 @@ if __name__ == "__main__":
             legends.append(f'layer {i} ({layer.__class__.__name__})')
     plt.legend(legends)
     plt.title('gradient distribution')
+
+    # visualize histograms
+    plt.figure(figsize=(20, 4)) # width and height of the plot
+    legends = []
+    for i,p in enumerate(parameters):
+        t = p.grad
+        if p.ndim == 2:
+            print('weight %10s | mean %+f | std %e | grad:data ratio %e' % (tuple(p.shape), t.mean(), t.std(), t.std() / p.std()))
+            hy, hx = torch.histogram(t, density=True)
+            plt.plot(hx[:-1].detach(), hy.detach())
+            legends.append(f'{i} {tuple(p.shape)}')
+    plt.legend(legends)
+    plt.title('weights gradient distribution')
+
+    plt.figure(figsize=(20, 4))
+    legends = []
+    for i,p in enumerate(parameters):
+        if p.ndim == 2:
+            plt.plot([ud[j][i] for j in range(len(ud))])
+            legends.append('param %d' % i)
+    plt.plot([0, len(ud)], [-3, -3], 'k') # these ratios should be ~1e-3, indicate on plot
+    plt.legend(legends);
 
     plt.show()

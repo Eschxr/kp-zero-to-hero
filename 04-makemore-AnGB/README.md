@@ -101,3 +101,10 @@
 * Another thing to note: batch normalization (subtracting the mean) removes any effect of the biases of the linear layer, so we can micro-optimize by removing the biases (which won't have any effect, since the responsibility has already been shifted to the batchnorm biases)
 * ANOTHER thing to note (oh my days): the way Karpathy does stochastic gradient descent here is unusual -- (human em-dash) randomly sampling batches from the dataset in each training iteration. The standard way afaik is to shuffle & split the dataset into batches at the start of each epoch so as to guarantee that after every epoch the entire dataset passes through our neural net (making the training process more tractable than random sampling at each iter)
 
+### Notes
+
+* Looking at the graphs stored in the figures directory, we can see in `weights_grad_dist1.PNG` that the gradients don't look very well distributed, and indeed the gradient:data ratio of the final layer is much higher than that of the previous layers, meaning it will get trained orders of magnitude more quickly than the rest of the neural network (bad bad, especially when using simple SGD instead of SOTA optimizers). However this "kinda fixes itself" as we train according to Andrej which actually turns out to be true when we look at the 1000-iteration graphs, but is still a bit bothersome.
+* Another very helpful visualization to inspect the training process of our neural net is the update:data ratio over time graph. We see that the final layer has a high ratio that comes down, which is because we squashed the data at the very beginning (and smaller data = larger update:data ratio). Andrej says 1e-3 is a decent ratio, and anything below is training too slow (& vice versa).
+* Overall we can see that our current setup is pretty well-behaved (and if we were to mess up, using these visualizations has a pretty good chance of exposing these mistakes)
+* Next time I'll work on bringing back batchnorm because yes all the magic numbers in the current setup feels very "balancing pencil on a finger"
+
