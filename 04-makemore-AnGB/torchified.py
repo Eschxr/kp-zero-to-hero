@@ -120,16 +120,16 @@ if __name__ == "__main__":
     C = torch.randn((VOCAB_SIZE, n_embd), generator=g)   # Bengio et al. 2003 compressed 17000 words -> 30-d space, we shall do 27 chars -> 2-d space
 
     layers = [
-        Linear(n_embd * BLOCK_SIZE, n_hidden), Tanh(),
-        Linear(           n_hidden, n_hidden), Tanh(),
-        Linear(           n_hidden, n_hidden), Tanh(),
-        Linear(           n_hidden, n_hidden), Tanh(),
-        Linear(           n_hidden, n_hidden), Tanh(),
-        Linear(           n_hidden, VOCAB_SIZE),
+        Linear(n_embd * BLOCK_SIZE, n_hidden), BatchNorm1d(n_hidden), Tanh(),
+        Linear(           n_hidden, n_hidden), BatchNorm1d(n_hidden), Tanh(),
+        Linear(           n_hidden, n_hidden), BatchNorm1d(n_hidden), Tanh(),
+        Linear(           n_hidden, n_hidden), BatchNorm1d(n_hidden), Tanh(),
+        Linear(           n_hidden, n_hidden), BatchNorm1d(n_hidden), Tanh(),
+        Linear(           n_hidden, VOCAB_SIZE), BatchNorm1d(VOCAB_SIZE),
     ]
 
     with torch.no_grad():
-        layers[-1].weight *= 0.1    # squash output layer
+        layers[-1].gamma *= 0.1    # squash output layer (gamma since it's batchnorm now)
         for layer in layers[:-1]:   # Apply gain for other layers
             if isinstance(layer, Linear):
                 layer.weight *= 5/3 # 5/3 as specified to be tanh optimum

@@ -108,3 +108,10 @@
 * Overall we can see that our current setup is pretty well-behaved (and if we were to mess up, using these visualizations has a pretty good chance of exposing these mistakes)
 * Next time I'll work on bringing back batchnorm because yes all the magic numbers in the current setup feels very "balancing pencil on a finger"
 
+### Final Bits & Pieces
+
+* To summarize, this section gave me a much better understanding of how values flow through the forward pass (and gradients w/ the backward pass) through deeper neural networks, the consequences of bad initialization & optimization, and how modern innovations like batchnorm make neural networks more robust against these issues.
+* and also, a set of visual diagnostic tools to debug neural networks (the 4 visualizations towards the end) when things aren't behaving nicely.
+* I can say that I understand activations and how gradients flow through them a *lot* better now, and can explain why saturated activations are a problem and how to conceptually deal with them.
+* However I can't really say the same about batchnorm *yet*, might take some time to fully digest.
+
