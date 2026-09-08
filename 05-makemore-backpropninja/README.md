@@ -36,5 +36,16 @@
 
 #### logits
 
-* I will write this tomorrow
-* For now, I want to note that dlogit_maxes is (almost) a zero tensor, meaning the gradients for (effect on the loss of) logit_maxes is nearly zero, which checks out because we use it as a constant to reduce all the logits such that exponentiating is well behaved, and it doesn't change any of the values in probs; this is good to know because even though we do a backward pass through this node, when everything is done correctly we still get the correct result that this thing has pretty much 0 impact
+* We have the following operations for the intermediate logit tensors:
+  * logit_maxes = logits.max(1, keepdim=True).values
+  * norm_logits = logits - logit_maxes
+  * counts = norm_logits.exp()
+* Starting from the bottom up, the derivative of e^x is famously e^x, which means that for dnorm_logits all we need to do is multiply norm_logits.exp() (or just counts) by dcounts, the previous partial gradient
+* Calculating dlogit_maxes is similar to what we've done for dcounts_sum_inv; recall that addition simply differentiates to 1 (-1 for subtraction) but once again we must sum the gradients across dim 1 because logit_maxes is a column that broadcasts so we must sum all of the contributions for each value
+* Note that dlogit_maxes is (almost) a zero tensor, meaning the gradients for (effect on the loss of) logit_maxes is nearly zero, which checks out because we use it as a constant to reduce all the logits such that exponentiating is well behaved, and it doesn't change any of the values in probs; this is good to know because even though we do a backward pass through this node, when everything is done correctly we still get the correct result that this thing has pretty much 0 impact
+* And finally, for dlogits, we once again just take the 2 contributing components and sum their partial derivatives, which, for the sum and max operations, simply pass through the respective gradients (for max, only the value selected)
+* I'll be keeping these in the Jupyter notebook from now on as this is getting verbose but important things I will still jot down here
+
+#### output layer
+
+* So the next operation that we have to differentiate is matmul, and just from thinking about it, I don't really know what to do here, I mean the elementary operations are still products and sums but how exactly they interact with one another is best figured out using an example and pen & paper
