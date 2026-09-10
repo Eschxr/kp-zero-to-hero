@@ -49,3 +49,15 @@
 #### output layer
 
 * So the next operation that we have to differentiate is matmul, and just from thinking about it, I don't really know what to do here, I mean the elementary operations are still products and sums but how exactly they interact with one another is best figured out using an example and pen & paper
+* Interestingly, using a small example (matmul of 2x2 matrices) we see that the partial derivative here is the transpose of the other factor matrix matmul with the previous gradient (here, it's apparently safe to figure out based on tensor dimensions because only the correct ordering will have valid dimensionality for matmul)
+* The bias is simpler, since it's just an element-wise addition broadcasted we just gotta take the previous gradient and sum it across the 0th dimension to align dimensionality
+
+#### hidden layer & batchnorm
+
+* The first step is to backprop through tanh, and the partial derivative of tanh(x) is 1-tanh(x)^2 so that's simple enough, just plug into the formula and don't forget the chain rule
+* Most of the rest of this layer before going into batchnorm is just products and sums, which I will not reiterate as we've gone over them a million times already
+* Deriving bnvar from bnvar_inv is a little interesting but it's just power rule + chain rule high school calculus (except with a power of -0.5 which is a little interesting + gotta add a little epsilon)
+
+#### digression: bessel's correction
+
+* tbd
