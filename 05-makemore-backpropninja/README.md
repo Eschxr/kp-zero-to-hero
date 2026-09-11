@@ -60,4 +60,8 @@
 
 #### digression: bessel's correction
 
-* tbd
+* To put briefly, when estimating the variance of a population using a sample, the naive formula almost always underestimates the population variance, so instead of dividing by n we divide by n-1 as an offset
+* This is easy to see with an extreme case where the sample size is 1, meaning our variance is 0; clearly this is a horrible underestimation
+* While yes with larger sample sizes this problem is mitigated it's still good practice to use this in our batchnorm to make our variance estimate a little more accurate
+* And as a fun fact, the batchnorm paper has an error where bessel's correction is not applied in training but is applied in inference; the PyTorch implementation (at the time of Andrej's video) follows the paper exactly and has this mistake too
+* Which means that anyone using PyTorch's batchnorm as is may be unaware that their code is bugging out due to a PyTorch implementation bug that stems from a small mistake in the batchnorm paper
