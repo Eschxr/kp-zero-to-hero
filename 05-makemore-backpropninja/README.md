@@ -65,3 +65,12 @@
 * While yes with larger sample sizes this problem is mitigated it's still good practice to use this in our batchnorm to make our variance estimate a little more accurate
 * And as a fun fact, the batchnorm paper has an error where bessel's correction is not applied in training but is applied in inference; the PyTorch implementation (at the time of Andrej's video) follows the paper exactly and has this mistake too
 * Which means that anyone using PyTorch's batchnorm as is may be unaware that their code is bugging out due to a PyTorch implementation bug that stems from a small mistake in the batchnorm paper
+* So, just to be rigorous it's best to consistently use unbiased batchnorm (e.g., with bessel's correction) at BOTH train-time and test-time
+
+#### back to backprop: batchnorm
+
+* Generally a good rule of thumb when doing this (not like anyone does backprop manually anymore) is to scrutinize the dimensions of the tensors (as usually, getting the dimensions correct nudges you in the correct direction so much that you're 75% of the way to the right answer)
+* Most ops after this point have been seen before (i.e: adds, sums, products, matmuls)
+* Finding the gradients for C (the embedding tensor) is interesting because we have to, for all embedded characters that show up (in Xb), route the gradients at the same indices through (from the gradients of the embeddings)
+* And Andrej does this using a for loop, honestly I'm not so sure how to do this differently either I was about to do a onehot encoding of Xb but that will ignore repeats (which we want to sum, not ignore)
+* That concludes exercise 1!! I've got most of this down and was able to come up with almost all of the correct answers but my values are slightly off (approximate still flagged true by the helper function & expressions identical so it's all good); next time it'll be backpropagating through cross entropy in one go, so that'll be fun to work out on paper (99% math, 1% implementation)
