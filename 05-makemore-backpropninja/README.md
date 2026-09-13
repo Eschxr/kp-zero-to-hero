@@ -74,3 +74,9 @@
 * Finding the gradients for C (the embedding tensor) is interesting because we have to, for all embedded characters that show up (in Xb), route the gradients at the same indices through (from the gradients of the embeddings)
 * And Andrej does this using a for loop, honestly I'm not so sure how to do this differently either I was about to do a onehot encoding of Xb but that will ignore repeats (which we want to sum, not ignore)
 * That concludes exercise 1!! I've got most of this down and was able to come up with almost all of the correct answers but my values are slightly off (approximate still flagged true by the helper function & expressions identical so it's all good); next time it'll be backpropagating through cross entropy in one go, so that'll be fun to work out on paper (99% math, 1% implementation)
+
+#### backprop: efficient cross entropy
+
+* Apparently the backward pass for cross-entropy (the entire expression) can be implemented in 3 lines of python instead of going element by element; I shall work this through on pen and paper
+* I couldn't figure it out on my own, and even after watching the solution still struggle to wrap my head around it
+* Will figure it out tomorrow
