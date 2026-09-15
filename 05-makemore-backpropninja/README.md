@@ -80,3 +80,9 @@
 * Apparently the backward pass for cross-entropy (the entire expression) can be implemented in 3 lines of python instead of going element by element; I shall work this through on pen and paper
 * I couldn't figure it out on my own, and even after watching the solution still struggle to wrap my head around it
 * Will figure it out tomorrow
+* When the expression is written out we see that everything simplifies to be the softmaxes for each element (minus 1 if it happens to be the correct label)
+* It makes sense intuitively as we want the gradient to be pretty much exactly proportional to how likely each of the wrong labels are (so that more confident wrong answers are nudged down more and less confident wrong answers are nudged down less) and we want to preserve the correct labels; however deriving and understanding this mathematically is not something I have down fully
+* The gradient along one row (which are the probabilities softmax provides for one sample) is exactly identical to the original probabilities from softmax output, except we now subtract 1 from the correct label
+* We know that probabilities always add up to 1, and now we subtract 1, which brings the total to 0; in other words the gradients become a zero-sum force that pulls down the likelihood of each of the wrong answers proportionally and pulls up the likelihood of the correct answer by a LOT
+* Once again it's important to try and keep the sum of deltas of the probabilities to be 0 as we are really just working with creating a good probability distribution, and I can't imagine it being good practice nudging the whole distribution around in an unordered manner (no matter how minute); again I don't know this to a certainty but intuitively it feels off if we don't ensure the changes "balance out"
+* "The amount by which we mispredict is then proportional to the strength of the pull" is a great quote that explains cross-entropy intuitively
