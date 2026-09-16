@@ -86,3 +86,17 @@
 * We know that probabilities always add up to 1, and now we subtract 1, which brings the total to 0; in other words the gradients become a zero-sum force that pulls down the likelihood of each of the wrong answers proportionally and pulls up the likelihood of the correct answer by a LOT
 * Once again it's important to try and keep the sum of deltas of the probabilities to be 0 as we are really just working with creating a good probability distribution, and I can't imagine it being good practice nudging the whole distribution around in an unordered manner (no matter how minute); again I don't know this to a certainty but intuitively it feels off if we don't ensure the changes "balance out"
 * "The amount by which we mispredict is then proportional to the strength of the pull" is a great quote that explains cross-entropy intuitively
+
+#### backprop: efficient batchnorm
+
+* Batchnorm all in one go, oh boy
+* This one's out of my league right now, but that's ok! I trust myself to understand eventually. For now, the answer's in the notebook
+
+#### putting everything together
+
+* Pasting all the intermediate results and replacing loss.backward() with each of the gradient tensors we've manually computed achieves a remarkably similar loss as using loss.backward()
+* My results:
+  * train 2.0703394412994385
+  * val 2.107590913772583
+* Even though most of it wasn't too bad I still really appreciate autograd and not having to do all this manually every time I wanna train a neural net
+* Next time I'll be building a *wavenet*, whatever that means
