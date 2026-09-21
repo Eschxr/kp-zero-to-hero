@@ -9,3 +9,5 @@
 
 * From here on most work will be done in Jupyter notebooks to better follow Andrej Karpathy's skeleton code
 * And also because it's convenient :|
+* Our previous MLP achieves similar loss across testing and validation, which means we're safe to add depth to the model as it's not overfitting
+* In this case we add depth by turning our model into a wavenet, where it can consider longer sequences of characters by crunching individual characters into bigrams, then into tetragrams, etc. (in powers of 2) so that we can learn information from more characters with a balance between number of layers and how quickly information gets crunched down
